@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { FIELD_NAMES, FIELD_TYPES } from "@/constants"
 import ImageUpload from "./ImageUpload"
+import { toast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 
 interface Props<T extends FieldValues> {
@@ -31,6 +33,7 @@ interface Props<T extends FieldValues> {
 
 const AuthForm = <T extends FieldValues>({type, schema, defaultValues, onSubmit} : Props<T>) => {
 
+    const router = useRouter();
     const isSignIn = type === 'SIGN_IN';
 
     // 1. Define your form.
@@ -41,7 +44,21 @@ const AuthForm = <T extends FieldValues>({type, schema, defaultValues, onSubmit}
  
   // 2. Define a submit handler.
   const handleSubmit: SubmitHandler<T> = async (data) => {
-    
+    const result = await onSubmit(data);
+    if(result.success){
+        toast({
+            title: "Success",
+            description: isSignIn ? "you've successfully sign in" : "you've successfully sign up"
+        });
+
+        router.push('/')
+    }else{
+        toast({
+            title: `Error ${isSignIn ? 'Sign In' : 'Sign Out'}`,
+            description: result.error ?? "An error occured",
+            variant: "destructive",
+        })
+    }
   }
 
   return (
